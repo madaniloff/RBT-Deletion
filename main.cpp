@@ -1,6 +1,6 @@
-//This program creates a red black tree, which can add nodes either from input or from a file
+//This program creates a red black tree, which can add or delete nodes either from input or from a file
 //Author: Mark Daniloff
-//Date: 4/7/2020
+//Date: 5/11/2020
 
 #include <iostream>
 #include <cstring>
@@ -44,7 +44,7 @@ void fixTree(Node* &head, Node* &current);
 void rotateRight(Node* &head, Node* &current);
 void rotateLeft(Node* &head, Node* &current);
 bool Search(Node* current, int num);
-void Remove(Node* &head, Node* &current, int num);
+void Remove(Node* &current, int num);
 
 int main() {
   //Set nodes to NULL
@@ -94,7 +94,8 @@ int main() {
       cin.ignore();
       //If node exists
       if (Search(head,input) == true) {
-	Remove(head, current, input);
+	current = head;
+	Remove(current, input);
       }
       //If node doesn't exist
       else if (Search(head, input) == false) {
@@ -461,39 +462,56 @@ bool Search(Node* current, int num) {
 }
 
 //Delete a node
-void Remove(Node* &head, Node* &current, int num) {
+void Remove(Node* &current, int num) {
   //If num is the head data
-  if (num == head->data) {
-
-  }
-  //If num is not the head data
-  else if (num != head->data) {
-    //If num is equal to current data
-    if (num == current->data) {
-      //If the node has 2 null children
+  if (num == current->data) {
+    //Red node - these functions are modified from my binary search tree project
+    if (current->color == 'R') {
+      //Leaf node
       if (current->left == NULL && current->right == NULL) {
-
+	delete current;
+	current = NULL;
       }
-      //If the node has 1 null left child
-      else if (current->left == NULL && current->right != NULL) {
-
-      }
-      //If the node has 1 null right child
+      //Left child
       else if (current->left != NULL && current->right == NULL) {
-
+	Node* temp = current;
+	current = current->left;
+	current->color == 'B';
+	delete temp;
+	temp = NULL;
       }
-      //If the node has 2 children
+      //Right child
+      else if (current->left == NULL && current->right != NULL) {
+	Node* temp = current;
+	current = current->right;
+	current->color == 'B';
+	delete temp;
+	temp = NULL;
+      }
+      //Two children
       else if (current->left != NULL && current->right != NULL) {
-
+	//Find minimum value in right subtree
+	Node* temp = current->right;
+	while (temp->left != NULL) {
+	  temp = temp->left;
+	}
+	current->data = temp->data;
+	current->color == 'B';
+	//Call function to delete duplicate node
+	Remove(current->right, temp->data);
       }
     }
-    //If num is greater current data
-    else if (num > current->data) {
-      Remove(head, current->left, num);
+    //Black
+    else if (current->color == 'B') {
+      
     }
-    //If num is less than current data
-    else if (num < current->data) {
-      Remove(head, current->right, num);
-    }
+  }
+  //If num is greater current data
+  else if (num > current->data) {
+    Remove(current->right, num);
+  }
+  //If num is less than current data
+  else if (num < current->data) {
+    Remove(current->left, num);
   }
 }
