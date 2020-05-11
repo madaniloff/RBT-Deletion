@@ -465,7 +465,7 @@ bool Search(Node* current, int num) {
 void Remove(Node* &head, Node* &current, int num) {
   //If num is the head data
   if (num == current->data) {
-    //Red node - these functions are modified from my binary search tree project
+    //Red node 
     if (current->color == 'R') {
       //Leaf node
       if (current->left == NULL && current->right == NULL) {
@@ -496,7 +496,7 @@ void Remove(Node* &head, Node* &current, int num) {
 	  temp = temp->left;
 	}
 	current->data = temp->data;
-	current->color == 'B';
+	current->color = 'B';
 	//Call function to delete duplicate node
 	Remove(head, current->right, temp->data);
       }
@@ -505,15 +505,8 @@ void Remove(Node* &head, Node* &current, int num) {
     else if (current->color == 'B') {
       //Leaf
       if (current->left == NULL && current->right == NULL) {
-	//If node is the head
-	if (current->data == head->data) {
-	  delete head;
-	  head = NULL;
-	}
-	//If node isn't the head
-	if (current->data != head->data) {
-	  
-	}
+	delete current;
+	current = NULL;
       }
       //Left child
       else if (current->left != NULL && current->right == NULL) {
@@ -521,13 +514,20 @@ void Remove(Node* &head, Node* &current, int num) {
 	if (current->left->color == 'R') {
 	  Node* temp = current;
 	  current = current->left;
-	  current->color == 'B';
+	  current->color = 'B';
 	  delete temp;
 	  temp = NULL;
 	}
 	//Black left child
 	else if (current->left->color == 'B') {
+	  //Node is head
+	  if (current->data == head->data) {
+	    delete head;
+	    head = NULL;
+	  }
+	  else {
 
+	  }
 	}
       }
       //Right child
@@ -536,13 +536,20 @@ void Remove(Node* &head, Node* &current, int num) {
 	if (current->right->color == 'R') {
 	  Node* temp = current;
 	  current = current->right;
-	  current->color == 'B';
+	  current->color = 'B';
 	  delete temp;
 	  temp = NULL;
 	}
 	//Black right child
 	else if (current->right->color == 'B') {
+	  //Node is head
+	  if (current->data == head->data) {
+	    delete head;
+	    head = NULL;
+	  }
+	  else {
 
+	  }
 	}
       }
       //Two children
@@ -555,7 +562,7 @@ void Remove(Node* &head, Node* &current, int num) {
 	    temp = temp->left;
 	  }
 	  current->data = temp->data;
-	  current->color == 'B';
+	  current->color = 'B';
 	  //Call function to delete duplicate node
 	  Remove(head, current->right, temp->data);
 	}
