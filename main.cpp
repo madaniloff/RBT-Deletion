@@ -44,7 +44,7 @@ void fixTree(Node* &head, Node* &current);
 void rotateRight(Node* &head, Node* &current);
 void rotateLeft(Node* &head, Node* &current);
 bool Search(Node* current, int num);
-void Remove(Node* &current, int num);
+void Remove(Node* &head, Node* &current, int num);
 
 int main() {
   //Set nodes to NULL
@@ -95,7 +95,7 @@ int main() {
       //If node exists
       if (Search(head,input) == true) {
 	current = head;
-	Remove(current, input);
+	Remove(head, current, input);
       }
       //If node doesn't exist
       else if (Search(head, input) == false) {
@@ -462,7 +462,7 @@ bool Search(Node* current, int num) {
 }
 
 //Delete a node
-void Remove(Node* &current, int num) {
+void Remove(Node* &head, Node* &current, int num) {
   //If num is the head data
   if (num == current->data) {
     //Red node - these functions are modified from my binary search tree project
@@ -498,20 +498,81 @@ void Remove(Node* &current, int num) {
 	current->data = temp->data;
 	current->color == 'B';
 	//Call function to delete duplicate node
-	Remove(current->right, temp->data);
+	Remove(head, current->right, temp->data);
       }
     }
     //Black
     else if (current->color == 'B') {
-      
+      //Leaf
+      if (current->left == NULL && current->right == NULL) {
+	//If node is the head
+	if (current->data == head->data) {
+	  delete head;
+	  head = NULL;
+	}
+	//If node isn't the head
+	if (current->data != head->data) {
+	  
+	}
+      }
+      //Left child
+      else if (current->left != NULL && current->right == NULL) {
+	//Red left child
+	if (current->left->color == 'R') {
+	  Node* temp = current;
+	  current = current->left;
+	  current->color == 'B';
+	  delete temp;
+	  temp = NULL;
+	}
+	//Black left child
+	else if (current->left->color == 'B') {
+
+	}
+      }
+      //Right child
+      else if (current->left == NULL && current->right != NULL) {
+	//Red right child
+	if (current->right->color == 'R') {
+	  Node* temp = current;
+	  current = current->right;
+	  current->color == 'B';
+	  delete temp;
+	  temp = NULL;
+	}
+	//Black right child
+	else if (current->right->color == 'B') {
+
+	}
+      }
+      //Two children
+      else if (current->left != NULL && current->right != NULL) {
+	//Both red
+	if (current->left->color == 'R' && current->right->color == 'R') {
+	  //Find minimum value in right subtree
+	  Node* temp = current->right;
+	  while (temp->left != NULL) {
+	    temp = temp->left;
+	  }
+	  current->data = temp->data;
+	  current->color == 'B';
+	  //Call function to delete duplicate node
+	  Remove(head, current->right, temp->data);
+	}
+	else {
+	  //Left child is black
+
+	  //Right child is black
+	}
+      }
     }
   }
   //If num is greater current data
   else if (num > current->data) {
-    Remove(current->right, num);
+    Remove(head, current->right, num);
   }
   //If num is less than current data
   else if (num < current->data) {
-    Remove(current->left, num);
+    Remove(head, current->left, num);
   }
 }
