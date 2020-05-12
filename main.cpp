@@ -18,6 +18,36 @@ struct Node {
   Node* left;
   int data;
   char color;
+  //The following functions are from Geeks for Geeks
+  //www.geeksforgeeks.org/red-black-tree-set-3-delete-2/
+  //Check if node is left child of parent
+  bool isOnLeft() {
+    return this == parent->left;
+  }
+  //Returns pointer to sibling
+  Node *sibling() {
+    //If no parent sibling == NULL
+    if (parent == NULL) {
+      return NULL;
+    }
+    if (isOnLeft()) {
+      return parent->right;
+    }
+    return parent->left;
+  }
+  //Moves node down and moves given node in its place
+  void moveDown(Node *nParent) {
+    if (parent != NULL) {
+      if (isOnLeft()) {
+	parent->left = nParent;
+      }
+      else {
+	parent->right = nParent;
+      }
+    }
+    nParent->parent = parent;
+    parent = nParent;
+  }
 };
 
 //Struct for printing tree
@@ -45,6 +75,9 @@ void rotateRight(Node* &head, Node* &current);
 void rotateLeft(Node* &head, Node* &current);
 bool Search(Node* current, int num);
 void Remove(Node* &head, Node* &current, int num);
+void fixDoubleBlack(Node* &head, Node* c);
+void leftRotate(Node* &head, Node* c);
+void rightRotate(Node* &head, Node* c);
 
 int main() {
   //Set nodes to NULL
@@ -463,6 +496,7 @@ bool Search(Node* current, int num) {
 
 //Delete a node
 void Remove(Node* &head, Node* &current, int num) {
+  Node* parent = current->parent;
   //If num is the head data
   if (num == current->data) {
     //Red node 
@@ -505,8 +539,21 @@ void Remove(Node* &head, Node* &current, int num) {
     else if (current->color == 'B') {
       //Leaf
       if (current->left == NULL && current->right == NULL) {
-	delete current;
-	current = NULL;
+	//Head
+	if (current->data == head->data) {
+	  delete head;
+	  head = NULL;
+	}
+	else {
+	  fixDoubleBlack(head, current);
+	  //Delete from tree
+	  if (current->isOnLeft()) {
+	    parent->left = NULL;
+	  }
+	  else {
+	    parent->right = NULL;
+	  }
+	}
       }
       //Left child
       else if (current->left != NULL && current->right == NULL) {
@@ -582,4 +629,123 @@ void Remove(Node* &head, Node* &current, int num) {
   else if (num < current->data) {
     Remove(head, current->left, num);
   }
+}
+
+//Fix double black violation
+//These functiosn are partially from Geeks for Geeks tutorial
+//www.geeksforgeeks.org/red-black-tree-set-3-delete-2
+void fixDoubleBlack(Node* &head, Node* c) {
+  if (c == head) {
+    return;
+  }
+  else {
+    Node* sibling = c->sibling();
+    Node* parent = c->parent;
+    //No siblings
+    if (sibling == NULL) {
+      //Push up to parent
+      fixDoubleBlack(head, parent);
+    }
+    else {
+      //Red sibling
+      if (sibling->color == 'R') {
+	parent->color = 'R';
+	sibling->color = 'B';
+	//Left case
+	if (sibling->isOnLeft()) {
+	  rightRotate(head, parent);
+	}
+	//Right case
+	else {
+	  leftRotate(head, parent);
+	}
+	fixDoubleBlack(head, c);
+      }
+      //Black sibling
+      else if (sibling->color == 'B') {
+	//At least 1 red child
+	if ((sibling->left != NULL && sibling->left->color == 'R') || (sibling->right != NULL && sibling->right->color == 'R')) {
+	  //Red node is sibling's left
+	  if (sibling->left != NULL && sibling->left->color == 'R') {
+	    //Left left case: red node is sibling's left and sibling is parent's left
+	    if (sibling->isOnLeft()) {
+	      sibling->left->color = sibling->color;
+	      sibling->color = parent->color;
+	      rightRotate(head, parent);
+	    }
+	    //Right left case: red node is sibling's left and sibling is parent's right
+	    else {
+	      sibling->left->color = parent->color;
+	      rightRotate(head, sibling);
+	      leftRotate(head, parent);
+	    }
+	  }
+	  //Red node is sibling's right
+	  else {
+	    //Left right case: red node is sibling's right and sibling is parent's left
+	    if (sibling->isOnLeft()) {
+	      sibling->right->color = parent->color;
+	      leftRotate(head, sibling);
+	      rightRotate(head, parent);
+	    }
+	    //Right right case: red node is sibling's right and sibling is parent's right
+	    else {
+	      sibling->right->color = sibling->color;
+	      sibling->color = parent->color;
+	      leftRotate(head, parent);
+	    }
+	  }
+	}
+	//Two black children
+	else {
+	  sibling->color = 'R';
+	  if (parent->color == 'B') {
+	    fixDoubleBlack(head, parent);
+	  }
+	  else {
+	    parent->color = 'B';
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+//Left rotate the node
+void leftRotate(Node* &head, Node *c) {
+  //new parent will be node's right child
+  Node* nParent = c->right;
+  //Update head if c is head
+  if (c == head) {
+    head = nParent;
+  }
+  c->moveDown(nParent);
+  //Connect c with nParent's left 
+  c->right = nParent->left;
+  //Connect nParent's left with node if it's not NULL
+  if (nParent->left != NULL) {
+    nParent->left->parent = c;
+  }
+  //Connect nParent with c
+  nParent->left = c;
+}
+
+//Right rotate the node
+void rightRotate(Node* &head, Node* c) {
+  //New parent will be node's left child
+  Node* nParent = c->left;
+  //Update head if c is head
+  if (c == head) {
+    head = nParent;
+  }
+  c->moveDown(nParent);
+  //Connect c with nParent's right
+  c->left = nParent->right;
+  //Connect nParent's right with node if it's not NULL
+  if (nParent->right != NULL) {
+    nParent->right->parent = c;
+  }
+  //Connect nParent with c
+  nParent->right = c;
 }
