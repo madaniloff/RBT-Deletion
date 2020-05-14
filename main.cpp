@@ -24,16 +24,25 @@ struct Node {
   bool isOnLeft() {
     return this == parent->left;
   }
+  bool isOnRight() {
+    return this == parent->right;
+  }
+  bool hasRedChild() {
+      return (left != NULL and left->color == 'R') or
+	(right != NULL and right->color == 'R');
+    }
   //Returns pointer to sibling
   Node *sibling() {
     //If no parent sibling == NULL
     if (parent == NULL) {
       return NULL;
     }
-    if (isOnLeft()) {
+    else if (isOnLeft()) {
       return parent->right;
     }
-    return parent->left;
+    else if (isOnRight()) {
+      return parent->left;
+    }
   }
   //Moves node down and moves given node in its place
   void moveDown(Node *nParent) {
@@ -78,6 +87,9 @@ void Remove(Node* &head, Node* &current, int num);
 void fixDoubleBlack(Node* &head, Node* c);
 void leftRotate(Node* &head, Node* c);
 void rightRotate(Node* &head, Node* c);
+void swapValues(Node* c, Node* s);
+Node* BSTreplace(Node* c);
+Node* successor(Node* c);
 
 int main() {
   //Set nodes to NULL
@@ -495,7 +507,10 @@ bool Search(Node* current, int num) {
 }
 
 //Delete a node
+//The following functions are partially from Geeks for Geeks tutorial
+//www.geeksforgeeks.org/red-black-tree-set-3-delete-2
 void Remove(Node* &head, Node* &current, int num) {
+  Node* u = BSTreplace(current);
   Node* parent = current->parent;
   //If num is the head data
   if (num == current->data) {
@@ -503,35 +518,53 @@ void Remove(Node* &head, Node* &current, int num) {
     if (current->color == 'R') {
       //Leaf node
       if (current->left == NULL && current->right == NULL) {
+	//If sibling isn't NULL color red
+	if (current->sibling() != NULL) {
+	  current->sibling()->color = 'R';
+	}
 	delete current;
 	current = NULL;
       }
-      //Left child
-      else if (current->left != NULL && current->right == NULL) {
-	Node* temp = current;
-	current = current->left;
-	current->color == 'B';
-	delete temp;
-	temp = NULL;
-      }
-      //Right child
-      else if (current->left == NULL && current->right != NULL) {
-	Node* temp = current;
-	current = current->right;
-	current->color == 'B';
-	delete temp;
-	temp = NULL;
+      //One child
+      else if (current->left == NULL || current->right == NULL) {
+	//Head
+	if (current == head) {
+	  current->data = u->data;
+	  current->left = current->right = NULL;
+	  delete u;
+	  u = NULL;
+	}
+	//If not head
+	else {
+	  if (current->isOnLeft()) {
+	    parent->left = u;
+	  }
+	  else {
+	    parent->right = u;
+	  }
+	  delete current;
+	  current = NULL;
+	  u->parent = parent;
+	  //If current and u are both black
+	  if (current->color == 'B' && u->color == 'B') {
+	    fixDoubleBlack(head, u);
+	  }
+	  //Current or u is black
+	  else {
+	    //Color u black
+	    u->color = 'B';
+	  }
+	}
       }
       //Two children
       else if (current->left != NULL && current->right != NULL) {
-	//Find minimum value in right subtree
+	//Swap current with minimum value
 	Node* temp = current->right;
 	while (temp->left != NULL) {
 	  temp = temp->left;
 	}
-	current->data = temp->data;
-	current->color = 'B';
-	//Call function to delete duplicate node
+	//Swap the values
+	swapValues(temp, current);
 	Remove(head, current->right, temp->data);
       }
     }
@@ -546,82 +579,53 @@ void Remove(Node* &head, Node* &current, int num) {
 	}
 	else {
 	  fixDoubleBlack(head, current);
-	  //Delete from tree
+	  delete current;
+	  current = NULL;
+	}
+      }
+      //One child
+      else if (current->left == NULL || current->right == NULL) {
+	//Head
+	if (current == head) {
+	  current->data = u->data;
+	  current->left = current->right = NULL;
+	  delete u;
+	}
+	//If not head
+	else {
 	  if (current->isOnLeft()) {
-	    parent->left = NULL;
+	    parent->left = u;
 	  }
 	  else {
-	    parent->right = NULL;
+	    parent->right = u;
 	  }
-	}
-      }
-      //Left child
-      else if (current->left != NULL && current->right == NULL) {
-	//Red left child
-	if (current->left->color == 'R') {
-	  Node* temp = current;
-	  current = current->left;
-	  current->color = 'B';
-	  delete temp;
-	  temp = NULL;
-	}
-	//Black left child
-	else if (current->left->color == 'B') {
-	  //Node is head
-	  if (current->data == head->data) {
-	    delete head;
-	    head = NULL;
+	  delete current;
+	  u->parent = parent;
+	  //If current and u are both black
+	  if (current->color == 'B' && u->color == 'B') {
+	    fixDoubleBlack(head, u);
 	  }
+	  //Current or u is black
 	  else {
-
-	  }
-	}
-      }
-      //Right child
-      else if (current->left == NULL && current->right != NULL) {
-	//Red right child
-	if (current->right->color == 'R') {
-	  Node* temp = current;
-	  current = current->right;
-	  current->color = 'B';
-	  delete temp;
-	  temp = NULL;
-	}
-	//Black right child
-	else if (current->right->color == 'B') {
-	  //Node is head
-	  if (current->data == head->data) {
-	    delete head;
-	    head = NULL;
-	  }
-	  else {
-
+	    //Color u black
+	    u->color = 'B';
 	  }
 	}
       }
       //Two children
       else if (current->left != NULL && current->right != NULL) {
-	//Both red
-	if (current->left->color == 'R' && current->right->color == 'R') {
-	  //Find minimum value in right subtree
-	  Node* temp = current->right;
-	  while (temp->left != NULL) {
-	    temp = temp->left;
-	  }
-	  current->data = temp->data;
-	  current->color = 'B';
-	  //Call function to delete duplicate node
-	  Remove(head, current->right, temp->data);
+	//Swap current with minimum value
+	Node* temp = current->right;
+	while (temp->left != NULL) {
+	  temp = temp->left;
 	}
-	else {
-	  //Left child is black
-
-	  //Right child is black
-	}
+	//Swap the values
+	swapValues(temp, current);
+	Remove(head, current->right, temp->data);
       }
     }
   }
-  //If num is greater current data
+  //If num is greater than current data
   else if (num > current->data) {
     Remove(head, current->right, num);
   }
@@ -632,8 +636,6 @@ void Remove(Node* &head, Node* &current, int num) {
 }
 
 //Fix double black violation
-//These functiosn are partially from Geeks for Geeks tutorial
-//www.geeksforgeeks.org/red-black-tree-set-3-delete-2
 void fixDoubleBlack(Node* &head, Node* c) {
   if (c == head) {
     return;
@@ -662,9 +664,9 @@ void fixDoubleBlack(Node* &head, Node* c) {
 	fixDoubleBlack(head, c);
       }
       //Black sibling
-      else if (sibling->color == 'B') {
+      else  {
 	//At least 1 red child
-	if ((sibling->left != NULL && sibling->left->color == 'R') || (sibling->right != NULL && sibling->right->color == 'R')) {
+	if (sibling->hasRedChild()) {
 	  //Red node is sibling's left
 	  if (sibling->left != NULL && sibling->left->color == 'R') {
 	    //Left left case: red node is sibling's left and sibling is parent's left
@@ -695,6 +697,7 @@ void fixDoubleBlack(Node* &head, Node* c) {
 	      leftRotate(head, parent);
 	    }
 	  }
+	  parent->color = 'B';
 	}
 	//Two black children
 	else {
@@ -748,4 +751,40 @@ void rightRotate(Node* &head, Node* c) {
   }
   //Connect nParent with c
   nParent->right = c;
+}
+
+//Swaps values
+ void swapValues(Node* c, Node* s) {
+   int temp;
+   temp = c->data;
+   c->data = s->data;
+   s->data = temp;
+ }
+
+//Finds node that replaces a deleted node in BST
+Node* BSTreplace(Node* c){
+  //Two children
+  if (c->left != NULL && c->right != NULL) {
+    return successor(c->right);
+  }
+  //Leaf
+  if (c->left == NULL && c->right == NULL) {
+    return NULL;
+  }
+  //Single child
+  if (c->left != NULL) {
+    return c->left;
+  }
+  else {
+    return c->right;
+  }
+}
+
+//Finds node that doesn't have a left child in the subtree of the given node
+Node *successor(Node *c) {
+  Node* temp = c;
+  while (temp->left != NULL) {
+    temp = temp->left;
+  }
+  return temp;
 }
