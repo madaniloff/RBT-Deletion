@@ -3,6 +3,8 @@
 //Date: 5/11/2020
 
 #include <iostream>
+#include <cstdio>
+#include <ctype.h>
 #include <cstring>
 #include <fstream>
 #include <stdlib.h>
@@ -141,6 +143,10 @@ int main() {
       if (Search(head,input) == true) {
 	current = head;
 	Remove(head, current, input);
+	if (head == NULL) {
+	  current = NULL;
+	  prev = NULL;
+	}
       }
       //If node doesn't exist
       else if (Search(head, input) == false) {
@@ -208,7 +214,7 @@ void fileInput(Node* &head, Node* &current, Node* &prev) {
 
 //Parse input, reused from my binary search tree project
 void Parse(Node* &head, Node* &current, Node* &prev, char* input, int* token, int* heaparr, int num, int count, int total, int exp, int j) {
-    int outputarr[100];
+  int outputarr[100];
   //Set the arrays to all zeros
   for (int i = 0; i < 100; i++) {
     heaparr[i] = 0;
@@ -266,6 +272,7 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
   }
   //If head isn't NULL
   else if (head != NULL) {
+    cout << "HEAD " << head << endl;
     //If val is greater than or equal to current->data
     if (num >= current->data) {
       prev = current;
@@ -283,6 +290,7 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
       }
       //If current->right != NULL
       else if (current != NULL) {
+	cout << "CURR " << current << endl;
 	numInsert(head, current, prev, num);
       }
     }
@@ -303,6 +311,7 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
       }
       //If current->left isn't NULL
       else if (current != NULL) {
+	cout << "CURR " << current << endl;
 	numInsert(head, current, prev, num);
       }
     }
@@ -532,7 +541,7 @@ void Remove(Node* &head, Node* &current, int num) {
 	  current->data = u->data;
 	  current->left = current->right = NULL;
 	  delete u;
-	  u = NULL;
+	  head = u;
 	}
 	//If not head
 	else {
@@ -590,6 +599,7 @@ void Remove(Node* &head, Node* &current, int num) {
 	  current->data = u->data;
 	  current->left = current->right = NULL;
 	  delete u;
+	  u = NULL;
 	}
 	//If not head
 	else {
