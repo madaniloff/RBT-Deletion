@@ -74,16 +74,16 @@ struct Trunk {
 };
 
 //Function initializations
-void manualInput(Node* &head, Node* &current, Node* &prev);
-void fileInput(Node* &head, Node* &current, Node* &prev);
-void Parse(Node* &head, Node* &current, Node* &prev, char* input, int* token, int* heaparr, int num, int count, int total, int exp, int j);
+void manualInput(Node* &head, Node* current, Node* &prev);
+void fileInput(Node* &head, Node* current, Node* &prev);
+void Parse(Node* &head, Node* current, Node* &prev, char* input, int* token, int* heaparr, int num, int count, int total, int exp, int j);
 void printTree(Node* current, Trunk* prev, bool isLeft);
 void showTrunks(Trunk *p);
-void numInsert(Node* &head, Node* &current, Node* &prev, int num);
-void fileInsert(Node* &head, Node* &current, Node* &prev, int* arr, int n);
-void fixTree(Node* &head, Node* &current);
-void rotateRight(Node* &head, Node* &current);
-void rotateLeft(Node* &head, Node* &current);
+void numInsert(Node* &head, Node* current, Node* &prev, int num);
+void fileInsert(Node* &head, Node* current, Node* &prev, int* arr, int n);
+void fixTree(Node* &head, Node* current);
+void rotateRight(Node* &head, Node* current);
+void rotateLeft(Node* &head, Node* current);
 bool Search(Node* current, int num);
 void Remove(Node* &head, Node* &current, int num);
 void fixDoubleBlack(Node* &head, Node* c);
@@ -161,7 +161,7 @@ int main() {
 } 
 
 //Enter a single number
-void manualInput(Node* &head, Node* &current, Node* &prev) {
+void manualInput(Node* &head, Node* current, Node* &prev) {
   //Prompt user
   int mInput;
   cout << "Enter a number: " << endl;
@@ -173,7 +173,7 @@ void manualInput(Node* &head, Node* &current, Node* &prev) {
 
 //Read input from a file
 //This is from my heap and binary search tree project
-void fileInput(Node* &head, Node* &current, Node* &prev) {
+void fileInput(Node* &head, Node* current, Node* &prev) {
   //Initialize variables
   char input[100];
   int token[100];
@@ -213,7 +213,7 @@ void fileInput(Node* &head, Node* &current, Node* &prev) {
 } 
 
 //Parse input, reused from my binary search tree project
-void Parse(Node* &head, Node* &current, Node* &prev, char* input, int* token, int* heaparr, int num, int count, int total, int exp, int j) {
+void Parse(Node* &head, Node* current, Node* &prev, char* input, int* token, int* heaparr, int num, int count, int total, int exp, int j) {
   int outputarr[100];
   //Set the arrays to all zeros
   for (int i = 0; i < 100; i++) {
@@ -262,17 +262,20 @@ void Parse(Node* &head, Node* &current, Node* &prev, char* input, int* token, in
 }
 
 //Insert one number into tree
-void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
+void numInsert(Node* &head, Node* current, Node* &prev, int num) {
   //If head is NULL
   if (head == NULL) {
     //Create new node and set its color to black
     head = new Node();
     head->data = num;
+    head->left = NULL;
+    head->right = NULL;
+    head->parent = NULL;
     head->color = 'B';
   }
   //If head isn't NULL
   else if (head != NULL) {
-    cout << "HEAD " << head << endl;
+    //cout << "HEAD " << head << endl;
     //If val is greater than or equal to current->data
     if (num >= current->data) {
       prev = current;
@@ -282,6 +285,9 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
 	//Create new node and set the color to red
 	current = new Node();
 	current->data = num;
+	current->left = NULL;
+	current->right = NULL;
+	current->parent = NULL;
 	current->color = 'R';
 	prev->right = current;
 	current->parent = prev;
@@ -290,7 +296,7 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
       }
       //If current->right != NULL
       else if (current != NULL) {
-	cout << "CURR " << current << endl;
+	//cout << "CURR " << current << endl;
 	numInsert(head, current, prev, num);
       }
     }
@@ -303,6 +309,9 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
 	//Create new node and set the color to red
 	current = new Node();
 	current->data = num;
+	current->left = NULL;
+	current->right = NULL;
+	current->parent = NULL;
 	current->color = 'R';
 	prev->left = current;
 	current->parent = prev;
@@ -311,7 +320,7 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
       }
       //If current->left isn't NULL
       else if (current != NULL) {
-	cout << "CURR " << current << endl;
+	//cout << "CURR " << current << endl;
 	numInsert(head, current, prev, num);
       }
     }
@@ -319,7 +328,7 @@ void numInsert(Node* &head, Node* &current, Node* &prev, int num) {
 }
 
 //Insert numbers from a file
-void fileInsert(Node* &head, Node* &current, Node* &prev, int* arr, int n) {
+void fileInsert(Node* &head, Node* current, Node* &prev, int* arr, int n) {
   for (int i = 0; i < n; i++) {
     current = head;
     numInsert(head, current, prev, arr[i]);
@@ -377,7 +386,7 @@ void printTree(Node* current, Trunk* prev, bool isLeft) {
 //Red Black Tree Balancing functions are partially from GeeksforGeeks
 //www.geeksforgeeks.org/c-program-red-black-tree-insertion
 //Fix red black tree insertion violations
-void fixTree(Node* &head, Node* &current) {
+void fixTree(Node* &head, Node* current) {
   //Create nodes
   Node* nparent = NULL;
   Node* grandparent = NULL;
@@ -438,7 +447,7 @@ void fixTree(Node* &head, Node* &current) {
 }
 
 //Rotate the tree right
-void rotateRight(Node* &head, Node* &current) {
+void rotateRight(Node* &head, Node* current) {
   Node* currentleft = current->left;
   current->left = currentleft->right;
   //If current's left isn't NULL
@@ -462,7 +471,7 @@ void rotateRight(Node* &head, Node* &current) {
 }
 
 //Rotate the tree left
-void rotateLeft(Node* &head, Node* &current) {
+void rotateLeft(Node* &head, Node* current) {
   Node* currentright = current->right;
   current->right = currentright->left;
   //If current's right isn't NULL
@@ -487,8 +496,12 @@ void rotateLeft(Node* &head, Node* &current) {
 
 //Search the tree for a node
 bool Search(Node* current, int num) {
+  //If head is NULL
+  if (current == NULL) {
+    return false;
+  }
   //If the number is found
-  if (current->data == num) {
+  else if (current->data == num) {
     return true;
   }
   //If the current data is greater than num
@@ -772,7 +785,7 @@ void rightRotate(Node* &head, Node* c) {
  }
 
 //Finds node that replaces a deleted node in BST
-Node* BSTreplace(Node* c){
+Node* BSTreplace(Node* c) {
   //Two children
   if (c->left != NULL && c->right != NULL) {
     return successor(c->right);
